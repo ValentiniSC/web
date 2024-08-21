@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Centro de Salud San Fernando</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <img src="{{ url_for('static', filename='san fernando.jpg') }}" alt="Logo Centro de Salud San Fernando">
+        <h1>Centro de Salud San Fernando</h1>
+    </div>
+
+    <div class="nav">
+        <a href="/">Volver al Portal web</a>
+        <a href="#">Mesa de Partes Virtual</a>
+        <a href="#">Libro de Reclamaciones</a>
+    </div>
+
+    <div class="content">
+        <h2>Bienvenido al Portal del Centro de Salud San Fernando</h2>
+        <p>Accede a los diferentes servicios en línea disponibles:</p>
+        <ul>
+            <li><a href="/chat">Chat en Línea</a></li>
+            <li><a href="#">Mesa de Partes Virtual</a></li>
+            <li><a href="#">Libro de Reclamaciones</a></li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2024 Centro de Salud San Fernando. Todos los derechos reservados.</p>
+    </div> 
+
+    <!-- CHAT MINIMIZABLE -->
+    <div id="chat-container">
+        <div id="chat-header" onclick="toggleChat()">
+            <h2>Estamos en Línea</h2>
+            <span class="toggle-btn">-</span>
+        </div>
+        <div id="chat-body">
+            <div id="chat-messages"></div>
+        </div>
+        <div id="chat-input">
+            <input type="text" id="chatInput" placeholder="Escribe tu mensaje aquí...">
+            <button onclick="sendMessage()">Enviar</button>
+        </div>
+    </div> 
+    <!-- FIN CHAT MINIMIZABLE -->
+
+    <script>
+        // Función para minimizar o expandir el chat
+        function toggleChat() {
+            const chatBody = document.getElementById('chat-body');
+            const chatInput = document.getElementById('chat-input');
+            const toggleBtn = document.querySelector('#chat-header .toggle-btn');
+
+            if (chatBody.style.display === 'none') {
+                chatBody.style.display = 'block';
+                chatInput.style.display = 'block';
+                toggleBtn.textContent = '-'; // BOTON - 
+            } else {
+                chatBody.style.display = 'none';
+                chatInput.style.display = 'none';
+                toggleBtn.textContent = '+'; // BOTON + 
+            }
+        }
+
+        // Inicializa el chat minimizado
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleChat();
+        });
+
+        // Función para enviar mensajes
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (message !== '') {
+                displayMessage(message, 'user-message');
+                input.value = '';
+
+                fetch('/get_response', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    displayMessage(data.response, 'bot-message');
+                });
+            }
+        }
+
+        // Función para mostrar mensajes en el chat
+        function displayMessage(message, className) {
+            const chatMessages = document.getElementById('chat-messages');
+            
+            // Crea el contenedor principal del mensaje
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${className}`;
+            
+            // Crea el contenedor del contenido del mensaje
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = message;
+            
+            // Inserta el contenido dentro del contenedor principal
+            messageDiv.appendChild(messageContent);
+            chatMessages.appendChild(messageDiv);
+            
+            // Asegura que el scroll se mantenga al final
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    </script>
+</body> 
+</html>
